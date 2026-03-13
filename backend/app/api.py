@@ -1,6 +1,6 @@
 """FastAPI routes for PromptLab"""
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 
@@ -60,43 +60,74 @@ def health_check():
 
 @app.get("/prompts", response_model=PromptList)
 def list_prompts(
-    collection_id: Optional[str] = None,
-    search: Optional[str] = None
+    sort: str = Query("created_at", description="Field to sort by"),
+    order: str = Query("desc", description="Sort order: asc or desc"),
+    collection_id: Optional[str] = Query(None, description="Filter by collection ID"),
+    search: Optional[str] = Query(None, description="Text search in title or content"),
+    limit: int = Query(50, ge=0, le=100, description="Max items to return"),
+    offset: int = Query(0, ge=0, description="Items to skip from start"),
 ):
     """
-    List prompts with optional collection filtering and text search.
+    List prompts with optional collection filtering, text search, sorting and pagination.
 
     Args:
-        collection_id (Optional[str]): Identifier of the collection to filter prompts by.
-        search (Optional[str]): Text query to filter prompts by title or content.
+        sort (str): Field to sort by. Currently only ``"created_at"`` is supported.
+        order (str): Sort order, either ``"asc"`` (oldest first) or ``"desc"`` (newest first).
+        collection_id (Optional[str]): If provided, only prompts belonging to this
+            collection are returned.
+        search (Optional[str]): Case-insensitive substring search applied to the
+            prompt title and content.
+        limit (int): Maximum number of prompts to return (page size).
+        offset (int): Number of prompts to skip from the start (page offset).
 
     Returns:
-        PromptList: List of prompts matching the filters and the total count.
+        PromptList: A container with the list of prompts in the current page and
+        the total number of prompts that match the filters before pagination.
 
     Raises:
-        HTTPException: Not raised directly by this endpoint.
+        HTTPException:
+            400: If an invalid ``sort`` field or ``order`` value is provided.
 
     Example:
-        >>> from app.api import list_prompts
-        >>> result = list_prompts(collection_id=None, search="welcome")
-        >>> len(result.prompts) >= 0
+        >>> from fastapi.testclient import TestClient
+        >>> from app.api import app
+        >>> client = TestClient(app)
+        >>> resp = client.get("/prompts?sort=created_at&order=asc&limit=5&offset=0")
+        >>> resp.status_code
+        200
+        >>> body = resp.json()
+        >>> "prompts" in body and "total" in body
         True
     """
     prompts = storage.get_all_prompts()
-    
+
     # Filter by collection if specified
     if collection_id:
         prompts = filter_prompts_by_collection(prompts, collection_id)
-    
-    # Search if query provided
+
+    # Text search (title/content) if provided
     if search:
         prompts = search_prompts(prompts, search)
-    
-    # Sort by date (newest first)
-    # Note: There might be an issue with the sorting...
-    prompts = sort_prompts_by_date(prompts, descending=True)
-    
-    return PromptList(prompts=prompts, total=len(prompts))
+
+    # Validate sort/order
+    allowed_sort_fields = {"created_at"}
+    if sort not in allowed_sort_fields:
+        raise HTTPException(status_code=400, detail="Invalid sort field")
+
+    if order not in {"asc", "desc"}:
+        raise HTTPException(status_code=400, detail="Invalid sort order")
+
+    # Apply sorting
+    descending = order == "desc"
+    if sort == "created_at":
+        prompts = sort_prompts_by_date(prompts, descending=descending)
+
+    total = len(prompts)
+
+    # Apply pagination
+    prompts = prompts[offset : offset + limit]
+
+    return PromptList(prompts=prompts, total=total)
 
 
 @app.get("/prompts/{prompt_id}", response_model=Prompt)
@@ -293,7 +324,10 @@ def delete_prompt(prompt_id: str):
 # ============== Collection Endpoints ==============
 
 @app.get("/collections", response_model=CollectionList)
-def list_collections():
+def list_collections(
+    limit: int = Query(50, ge=0, le=100, description="Max items to return"),
+    offset: int = Query(0, ge=0, description="Items to skip from start"),
+):
     """
     List all collections.
 
@@ -313,7 +347,9 @@ def list_collections():
         True
     """
     collections = storage.get_all_collections()
-    return CollectionList(collections=collections, total=len(collections))
+    total = len(collections)
+    collections = collections[offset : offset + limit]
+    return CollectionList(collections=collections, total=total)
 
 
 @app.get("/collections/{collection_id}", response_model=Collection)
