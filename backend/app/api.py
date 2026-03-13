@@ -2,16 +2,24 @@
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Optional
+from typing import Optional, List
 
 from app.models import (
     Prompt, PromptCreate, PromptUpdate,
     Collection, CollectionCreate,
     PromptList, CollectionList, HealthResponse,
+    TagUsage, TagList,
     get_current_time
 )
 from app.storage import storage
-from app.utils import sort_prompts_by_date, filter_prompts_by_collection, search_prompts
+from app.utils import (
+    sort_prompts_by_date,
+    filter_prompts_by_collection,
+    search_prompts,
+    normalize_tags,
+    parse_tag_query_params,
+    filter_prompts_by_tags,
+)
 from app import __version__
 
 
@@ -64,6 +72,8 @@ def list_prompts(
     order: str = Query("desc", description="Sort order: asc or desc"),
     collection_id: Optional[str] = Query(None, description="Filter by collection ID"),
     search: Optional[str] = Query(None, description="Text search in title or content"),
+    tags_any: Optional[List[str]] = Query(None, description="Match at least one of these tags"),
+    tags_all: Optional[List[str]] = Query(None, description="Match all of these tags"),
     limit: int = Query(50, ge=0, le=100, description="Max items to return"),
     offset: int = Query(0, ge=0, description="Items to skip from start"),
 ):
@@ -77,6 +87,8 @@ def list_prompts(
             collection are returned.
         search (Optional[str]): Case-insensitive substring search applied to the
             prompt title and content.
+        tags_any (Optional[List[str]]): Match at least one of these tags.
+        tags_all (Optional[List[str]]): Match all of these tags.
         limit (int): Maximum number of prompts to return (page size).
         offset (int): Number of prompts to skip from the start (page offset).
 
@@ -101,13 +113,24 @@ def list_prompts(
     """
     prompts = storage.get_all_prompts()
 
-    # Filter by collection if specified
     if collection_id:
         prompts = filter_prompts_by_collection(prompts, collection_id)
 
-    # Text search (title/content) if provided
     if search:
         prompts = search_prompts(prompts, search)
+
+    # Parse and normalize tag query params
+    try:
+        parsed_tags_any = parse_tag_query_params(tags_any)
+        parsed_tags_all = parse_tag_query_params(tags_all)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    prompts = filter_prompts_by_tags(
+        prompts,
+        tags_any=parsed_tags_any,
+        tags_all=parsed_tags_all,
+    )
 
     # Validate sort/order
     allowed_sort_fields = {"created_at"}
@@ -117,14 +140,11 @@ def list_prompts(
     if order not in {"asc", "desc"}:
         raise HTTPException(status_code=400, detail="Invalid sort order")
 
-    # Apply sorting
     descending = order == "desc"
     if sort == "created_at":
         prompts = sort_prompts_by_date(prompts, descending=descending)
 
     total = len(prompts)
-
-    # Apply pagination
     prompts = prompts[offset : offset + limit]
 
     return PromptList(prompts=prompts, total=total)
@@ -184,8 +204,14 @@ def create_prompt(prompt_data: PromptCreate):
         collection = storage.get_collection(prompt_data.collection_id)
         if not collection:
             raise HTTPException(status_code=400, detail="Collection not found")
-    
-    prompt = Prompt(**prompt_data.model_dump())
+
+    payload = prompt_data.model_dump()
+    try:
+        payload["tags"] = normalize_tags(payload.get("tags"))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    prompt = Prompt(**payload)
     return storage.create_prompt(prompt)
 
 
@@ -218,29 +244,30 @@ def update_prompt(prompt_id: str, prompt_data: PromptUpdate):
     existing = storage.get_prompt(prompt_id)
     if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
-    
-    # Validate collection if provided
+
     if prompt_data.collection_id:
         collection = storage.get_collection(prompt_data.collection_id)
         if not collection:
             raise HTTPException(status_code=400, detail="Collection not found")
-    
-    # BUG #2 fixed: update the updated_at timestamp on modification
+
+    try:
+        normalized_tags = normalize_tags(prompt_data.tags)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
     updated_prompt = Prompt(
         id=existing.id,
         title=prompt_data.title,
         content=prompt_data.content,
         description=prompt_data.description,
         collection_id=prompt_data.collection_id,
+        tags=normalized_tags,
         created_at=existing.created_at,
         updated_at=get_current_time()
     )
-    
+
     return storage.update_prompt(prompt_id, updated_prompt)
 
-
-# NOTE: PATCH endpoint is missing! Students need to implement this.
-# It should allow partial updates (only update provided fields)
 
 @app.patch("/prompts/{prompt_id}", response_model=Prompt)
 def patch_prompt(prompt_id: str, prompt_data: PromptUpdate):
@@ -272,14 +299,18 @@ def patch_prompt(prompt_id: str, prompt_data: PromptUpdate):
     if not existing:
         raise HTTPException(status_code=404, detail="Prompt not found")
 
-    # Only use fields that were actually sent in the request
     update_data = prompt_data.model_dump(exclude_unset=True)
 
-    # If collection_id is being changed, validate it
     if "collection_id" in update_data and update_data["collection_id"] is not None:
         collection = storage.get_collection(update_data["collection_id"])
         if not collection:
             raise HTTPException(status_code=400, detail="Collection not found")
+
+    if "tags" in update_data:
+        try:
+            update_data["tags"] = normalize_tags(update_data["tags"])
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc))
 
     updated_prompt = Prompt(
         id=existing.id,
@@ -287,12 +318,12 @@ def patch_prompt(prompt_id: str, prompt_data: PromptUpdate):
         content=update_data.get("content", existing.content),
         description=update_data.get("description", existing.description),
         collection_id=update_data.get("collection_id", existing.collection_id),
+        tags=update_data.get("tags", existing.tags),
         created_at=existing.created_at,
         updated_at=get_current_time(),
     )
 
     return storage.update_prompt(prompt_id, updated_prompt)
-
 
 
 @app.delete("/prompts/{prompt_id}", status_code=204)
@@ -444,3 +475,13 @@ def delete_collection(collection_id: str):
         raise HTTPException(status_code=404, detail="Collection not found")
 
     return None
+
+
+@app.get("/tags", response_model=TagList)
+def list_tags():
+    """
+    List all distinct tags with usage counts.
+    """
+    usage = storage.get_tag_usage()
+    tags = [TagUsage(name=name, count=count) for name, count in sorted(usage.items())]
+    return TagList(tags=tags, total=len(tags))

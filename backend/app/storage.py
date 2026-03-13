@@ -314,6 +314,57 @@ class Storage:
         self._prompts.clear()
         self._collections.clear()
 
+    def get_tag_usage(self) -> Dict[str, int]:
+        """
+        Compute usage counts for all tags currently used by prompts.
+
+        Args:
+            None
+
+        Returns:
+            Dict[str, int]: Mapping of tag name to number of prompts using that tag.
+
+        Raises:
+            None
+
+        Example:
+            >>> from app.models import Prompt
+            >>> s = Storage()
+            >>> s.create_prompt(Prompt(title="A", content="C", tags=["nlp", "python"]))
+            >>> s.create_prompt(Prompt(title="B", content="C", tags=["nlp"]))
+            >>> usage = s.get_tag_usage()
+            >>> usage["nlp"], usage["python"]
+            (2, 1)
+        """
+        tag_usage: Dict[str, int] = {}
+        for prompt in self._prompts.values():
+            # Count each unique tag once per prompt
+            for tag in set(prompt.tags):
+                tag_usage[tag] = tag_usage.get(tag, 0) + 1
+        return tag_usage
+
+    def get_all_tags(self) -> List[str]:
+        """
+        Retrieve all distinct tags used across prompts, sorted alphabetically.
+
+        Args:
+            None
+
+        Returns:
+            List[str]: Sorted list of unique tag names.
+
+        Raises:
+            None
+
+        Example:
+            >>> from app.models import Prompt
+            >>> s = Storage()
+            >>> s.create_prompt(Prompt(title="A", content="C", tags=["zeta", "alpha"]))
+            >>> s.get_all_tags()
+            ['alpha', 'zeta']
+        """
+        return sorted(self.get_tag_usage().keys())
+
 
 # Global storage instance
 storage = Storage()

@@ -25,12 +25,14 @@ class PromptBase(BaseModel):
         content (str): Main text content or template of the prompt.
         description (Optional[str]): Optional short description or notes about the prompt.
         collection_id (Optional[str]): Identifier of the collection this prompt belongs to, if any.
+        tags (List[str]): Optional list of tags assigned to the prompt.
     """
 
     title: str = Field(..., min_length=1, max_length=200)
     content: str = Field(..., min_length=1)
     description: Optional[str] = Field(None, max_length=500)
     collection_id: Optional[str] = None
+    tags: List[str] = Field(default_factory=list, max_items=20)
 
 
 class PromptCreate(PromptBase):
@@ -46,17 +48,17 @@ class PromptCreate(PromptBase):
     pass
 
 
-class PromptUpdate(PromptBase):
+class PromptUpdate(BaseModel):
     """
-    Model for updating an existing prompt.
+    Partial update model for PATCH/PUT operations.
+    All fields are optional for PATCH semantics.
+    """
 
-    Attributes:
-        title (str): Updated title of the prompt.
-        content (str): Updated main text content or template of the prompt.
-        description (Optional[str]): Updated short description or notes about the prompt.
-        collection_id (Optional[str]): Updated collection identifier the prompt belongs to, if any.
-    """
-    pass
+    title: Optional[str] = Field(None, min_length=1, max_length=200)
+    content: Optional[str] = Field(None, min_length=1)
+    description: Optional[str] = Field(None, max_length=500)
+    collection_id: Optional[str] = None
+    tags: Optional[List[str]] = Field(None, max_items=20)
 
 
 class Prompt(PromptBase):
@@ -69,6 +71,7 @@ class Prompt(PromptBase):
         content (str): Main text content or template of the prompt.
         description (Optional[str]): Optional short description or notes about the prompt.
         collection_id (Optional[str]): Identifier of the collection this prompt belongs to, if any.
+        tags (List[str]): Tags assigned to the prompt.
         created_at (datetime): Timestamp when the prompt was created.
         updated_at (datetime): Timestamp of the last update to the prompt.
     """
@@ -164,3 +167,29 @@ class HealthResponse(BaseModel):
 
     status: str
     version: str
+
+
+class TagUsage(BaseModel):
+    """
+    Represents a tag and how many prompts currently use it.
+
+    Attributes:
+        name (str): Normalized tag name.
+        count (int): Number of prompts using this tag.
+    """
+
+    name: str = Field(..., min_length=1, max_length=50)
+    count: int = Field(..., ge=0)
+
+
+class TagList(BaseModel):
+    """
+    Wrapper response for listing tag usage across the system.
+
+    Attributes:
+        tags (List[TagUsage]): Sorted list of tag usage entries.
+        total (int): Number of distinct tags.
+    """
+
+    tags: List[TagUsage] = Field(default_factory=list)
+    total: int = Field(..., ge=0)

@@ -508,3 +508,153 @@ class TestCollectionsQueryParameters:
         """Invalid pagination params should return 400-style error."""
         response = client.get("/collections?limit=-10")
         assert response.status_code in (400, 422)
+
+
+# ---------------------------------------------------------------------------
+# Tagging endpoints / behavior
+# ---------------------------------------------------------------------------
+
+
+class TestTaggingSystem:
+    """Tests for prompt tagging behavior and /tags endpoint."""
+
+    def test_create_prompt_with_tags_normalized(self, client: TestClient):
+        payload = {
+            "title": "Tagged Prompt",
+            "content": "Prompt content",
+            "tags": ["  NLP ", "python", "Python", "", "  "],
+        }
+
+        response = client.post("/prompts", json=payload)
+        assert response.status_code == 201
+        data = response.json()
+
+        assert "tags" in data
+        assert data["tags"] == ["nlp", "python"]
+
+    def test_put_replaces_entire_tag_list(self, client: TestClient):
+        create_payload = {
+            "title": "Original",
+            "content": "Original content",
+            "tags": ["alpha", "beta"],
+        }
+        created = client.post("/prompts", json=create_payload).json()
+        prompt_id = created["id"]
+
+        put_payload = {
+            "title": "Original",
+            "content": "Original content",
+            "tags": ["gamma"],
+        }
+        response = client.put(f"/prompts/{prompt_id}", json=put_payload)
+        assert response.status_code == 200
+        assert response.json()["tags"] == ["gamma"]
+
+    def test_patch_replaces_tags_when_present(self, client: TestClient):
+        created = client.post(
+            "/prompts",
+            json={"title": "P1", "content": "C1", "tags": ["one", "two"]},
+        ).json()
+        prompt_id = created["id"]
+
+        response = client.patch(f"/prompts/{prompt_id}", json={"tags": ["  TWO ", "three"]})
+        assert response.status_code == 200
+        assert response.json()["tags"] == ["two", "three"]
+
+    def test_patch_keeps_tags_when_not_present(self, client: TestClient):
+        created = client.post(
+            "/prompts",
+            json={"title": "P1", "content": "C1", "tags": ["keepme"]},
+        ).json()
+        prompt_id = created["id"]
+
+        response = client.patch(f"/prompts/{prompt_id}", json={"title": "Updated title"})
+        assert response.status_code == 200
+        assert response.json()["tags"] == ["keepme"]
+
+    def test_filter_prompts_by_tags_any(self, client: TestClient):
+        client.post("/prompts", json={"title": "A", "content": "x", "tags": ["nlp"]})
+        client.post("/prompts", json={"title": "B", "content": "x", "tags": ["vision"]})
+        client.post("/prompts", json={"title": "C", "content": "x", "tags": ["audio"]})
+
+        response = client.get("/prompts?tags_any=vision&tags_any=nlp")
+        assert response.status_code == 200
+
+        titles = [p["title"] for p in response.json()["prompts"]]
+        assert "A" in titles
+        assert "B" in titles
+        assert "C" not in titles
+
+    def test_filter_prompts_by_tags_all(self, client: TestClient):
+        client.post("/prompts", json={"title": "A", "content": "x", "tags": ["nlp", "python"]})
+        client.post("/prompts", json={"title": "B", "content": "x", "tags": ["nlp"]})
+
+        response = client.get("/prompts?tags_all=nlp&tags_all=python")
+        assert response.status_code == 200
+
+        titles = [p["title"] for p in response.json()["prompts"]]
+        assert "A" in titles
+        assert "B" not in titles
+
+    def test_filter_prompts_by_tags_any_and_tags_all(self, client: TestClient):
+        client.post(
+            "/prompts",
+            json={"title": "A", "content": "x", "tags": ["nlp", "python", "prod"]},
+        )
+        client.post(
+            "/prompts",
+            json={"title": "B", "content": "x", "tags": ["nlp", "python", "draft"]},
+        )
+        client.post("/prompts", json={"title": "C", "content": "x", "tags": ["nlp"]})
+
+        # Must include all(nlp, python) and any(prod, qa)
+        response = client.get("/prompts?tags_all=nlp&tags_all=python&tags_any=prod&tags_any=qa")
+        assert response.status_code == 200
+
+        titles = [p["title"] for p in response.json()["prompts"]]
+        assert titles == ["A"] or ("A" in titles and "B" not in titles and "C" not in titles)
+
+    def test_filter_prompts_with_comma_separated_params(self, client: TestClient):
+        client.post("/prompts", json={"title": "A", "content": "x", "tags": ["nlp", "python"]})
+        client.post("/prompts", json={"title": "B", "content": "x", "tags": ["vision"]})
+
+        response = client.get("/prompts?tags_any=nlp,vision")
+        assert response.status_code == 200
+
+        titles = [p["title"] for p in response.json()["prompts"]]
+        assert "A" in titles
+        assert "B" in titles
+
+    def test_list_all_tags_usage_sorted(self, client: TestClient):
+        client.post("/prompts", json={"title": "A", "content": "x", "tags": ["zeta", "alpha"]})
+        client.post("/prompts", json={"title": "B", "content": "x", "tags": ["alpha"]})
+
+        response = client.get("/tags")
+        assert response.status_code == 200
+        data = response.json()
+
+        assert "tags" in data
+        assert "total" in data
+        assert data["total"] == 2
+
+        names = [t["name"] for t in data["tags"]]
+        assert names == sorted(names)  # alphabetically sorted
+
+        counts = {t["name"]: t["count"] for t in data["tags"]}
+        assert counts["alpha"] == 2
+        assert counts["zeta"] == 1
+
+    def test_list_tags_empty_system(self, client: TestClient):
+        response = client.get("/tags")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["tags"] == []
+        assert data["total"] == 0
+
+    def test_create_prompt_with_too_many_tags_fails(self, client: TestClient):
+        too_many_tags = [f"tag{i}" for i in range(21)]
+        response = client.post(
+            "/prompts",
+            json={"title": "Too many tags", "content": "x", "tags": too_many_tags},
+        )
+        assert response.status_code in (400, 422)
