@@ -1,45 +1,25 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/javascript-node
 {
-  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
-  "name": "Assessment B - Inventory API",
+	"name": "Node.js",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/javascript-node:4-22-trixie",
+	"features": {
+		"ghcr.io/devcontainers-extra/features/jshint:2": {}
+	}
 
-  "postCreateCommand": "bash .devcontainer/setup.sh", 
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	// "features": {},
 
-  "remoteEnv": {
-      "COURSE_SEMESTER": "SPRING_2025-2026"
-  },
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [],
 
-  "customizations": {
-    "vscode": {
-      "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "continue.continue"
-      ],
-      "settings": {
-        "files.autoSave": "afterDelay",
-        "editor.tabSize": 4,
-        "editor.wordWrap": "on",
-        "python.defaultInterpreterPath": "/usr/local/bin/python",
-        
-        "github.copilot.enable": {
-            "*": false, 
-            "plaintext": false 
-        },
-        "github.copilot.editor.enableAutoCompletions": false,
-        "chat.agent.enabled": false,
-        "workbench.activityBar.hiddenExtensionItemIds": [
-            "github.copilot",
-            "github.copilot.chat"
-        ]
-      }
-    }
-  },
-  
-  "portsAttributes": {
-    "8000": {
-      "label": "FastAPI Server",
-      "onAutoForward": "openBrowser"
-    }
-  },
-  "forwardPorts": [8000]
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "yarn install",
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
 }
