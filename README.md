@@ -3,6 +3,19 @@
 PromptLab is a full-stack prompt management platform with a FastAPI backend and a React + Vite frontend.
 It supports prompt and collection management, filtering/search, pagination, health checks, and a polished UI workflow for creating and organizing reusable AI prompts.
 
+
+### Prompts Page
+
+![PromptLab Prompts Page](docs/images/app-prompts.png)
+
+### Collections Page
+
+![PromptLab Collections Page](docs/images/app-collections.png)
+
+### Health Page
+
+![PromptLab Health Page](docs/images/app-health.png)
+
 ## Table of Contents
 
 - [What This Project Includes](#what-this-project-includes)
@@ -217,21 +230,6 @@ For full request/response details, see `docs/API_REFERENCE.md` and FastAPI docs 
 
 ---
 
-## Screenshots
-
-> The following images are included in `docs/images/` to document the current UI flows.
-
-### Prompts Page
-
-![PromptLab Prompts Page](docs/images/app-prompts.png)
-
-### Collections Page
-
-![PromptLab Collections Page](docs/images/app-collections.png)
-
-### Health Page
-
-![PromptLab Health Page](docs/images/app-health.png)
 
 ### Replacing with your real runtime screenshots
 
