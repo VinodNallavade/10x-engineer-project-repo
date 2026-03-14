@@ -8,8 +8,8 @@ const NewPromptPage: React.FC = () => {
 
   const handleSubmit = async (data: any) => {
     try {
-      const newPrompt = await createPrompt(data);
-      navigate(`/prompts/${newPrompt.id}`);
+      await createPrompt(data);
+      navigate('/prompts');
     } catch (error) {
       console.error('Failed to create prompt:', error);
     }

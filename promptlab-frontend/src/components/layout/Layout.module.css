@@ -7,16 +7,76 @@
 	display: grid;
 	grid-template-columns: 220px 1fr;
 	min-height: calc(100vh - 72px);
+	transition: grid-template-columns 180ms ease;
+}
+
+:global(.main-content.sidebar-collapsed) {
+	grid-template-columns: 72px 1fr;
 }
 
 :global(.main-content > main) {
 	padding: var(--spacing-lg);
 }
 
+:global(.main-toolbar) {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-md);
+	margin-bottom: var(--spacing-md);
+	flex-wrap: wrap;
+}
+
+:global(.sidebar-toggle) {
+	width: 36px;
+	height: 36px;
+	padding: 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1rem;
+	line-height: 1;
+}
+
+:global(.sidebar-toggle-icon) {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+:global(.breadcrumb) {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+	font-size: var(--font-size-small);
+	flex-wrap: wrap;
+	flex: 1;
+}
+
+:global(.breadcrumb-item) {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--spacing-xs);
+}
+
+:global(.breadcrumb-separator) {
+	opacity: 0.6;
+}
+
+:global(.breadcrumb a) {
+	color: var(--color-primary);
+	font-weight: 600;
+}
+
 :global(.sidebar) {
 	padding: var(--spacing-lg);
 	background: #ffffff;
 	border-right: 1px solid #e9e9e9;
+	overflow: hidden;
+	transition: padding 180ms ease;
+}
+
+:global(.sidebar.collapsed) {
+	padding: var(--spacing-sm);
 }
 
 :global(.sidebar-nav-list) {
@@ -28,7 +88,9 @@
 }
 
 :global(.sidebar-link) {
-	display: block;
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-sm);
 	padding: 10px 12px;
 	border-radius: var(--border-radius);
 	color: var(--color-text);
@@ -36,8 +98,22 @@
 	transition: background-color 120ms ease, color 120ms ease;
 }
 
+:global(.sidebar-link-icon) {
+	font-size: 1rem;
+	line-height: 1;
+}
+
+:global(.sidebar.collapsed .sidebar-link) {
+	justify-content: center;
+	padding: 10px 8px;
+}
+
+:global(.sidebar.collapsed .sidebar-link-label) {
+	display: none;
+}
+
 :global(.sidebar-link:hover) {
-	background: rgba(74, 144, 226, 0.08);
+	background: rgba(124, 58, 237, 0.12);
 	text-decoration: none;
 }
 

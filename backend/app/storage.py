@@ -366,5 +366,154 @@ class Storage:
         return sorted(self.get_tag_usage().keys())
 
 
+def seed_mock_data(target_storage: Storage) -> None:
+    """
+    Seed in-memory storage with demo collections and prompts.
+
+    Data is added only when both prompts and collections are empty to avoid
+    overwriting any existing runtime state.
+    """
+    if target_storage.get_all_prompts() or target_storage.get_all_collections():
+        return
+
+    engineering_collection = target_storage.create_collection(
+        Collection(
+            name="Engineering",
+            description="Prompts for development, debugging, and architecture tasks",
+        )
+    )
+    product_collection = target_storage.create_collection(
+        Collection(
+            name="Product",
+            description="Prompts for PRDs, user stories, and roadmap planning",
+        )
+    )
+    marketing_collection = target_storage.create_collection(
+        Collection(
+            name="Marketing",
+            description="Prompts for campaign copy, social posts, and positioning",
+        )
+    )
+
+    target_storage.create_prompt(
+        Prompt(
+            title="Code Review Assistant",
+            content="Review this pull request diff and list critical issues first, then suggest improvements.",
+            description="Structured review prompt for PR quality checks.",
+            collection_id=engineering_collection.id,
+            tags=["code-review", "quality", "engineering"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="API Error Debugger",
+            content="Given logs and stack traces, identify root cause, likely impact, and exact fix steps.",
+            description="Helps troubleshoot backend/API failures quickly.",
+            collection_id=engineering_collection.id,
+            tags=["debugging", "api", "backend"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Feature PRD Draft",
+            content="Draft a concise PRD with problem statement, goals, scope, non-goals, and success metrics.",
+            description="Template for turning ideas into implementation-ready requirements.",
+            collection_id=product_collection.id,
+            tags=["prd", "product", "planning"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Launch Announcement",
+            content="Write a product launch announcement with headline, key benefits, and call to action.",
+            description="Reusable marketing prompt for release communication.",
+            collection_id=marketing_collection.id,
+            tags=["marketing", "launch", "copywriting"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Unit Test Generator",
+            content="Generate comprehensive pytest unit tests for the provided Python function including edge cases.",
+            description="Helps create high-quality tests quickly.",
+            collection_id=engineering_collection.id,
+            tags=["testing", "python", "quality"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="System Design Interview Prep",
+            content="Design a scalable architecture for the described product and explain trade-offs, bottlenecks, and scaling plan.",
+            description="Useful for architecture reviews and interview preparation.",
+            collection_id=engineering_collection.id,
+            tags=["architecture", "scalability", "design"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Bug Triage Assistant",
+            content="Classify this bug report by severity, reproduction confidence, and likely subsystem ownership.",
+            description="Supports engineering triage workflows.",
+            collection_id=engineering_collection.id,
+            tags=["bug", "triage", "engineering"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="User Story Builder",
+            content="Convert this feature request into structured user stories with acceptance criteria and edge cases.",
+            description="Transforms ideas into actionable stories.",
+            collection_id=product_collection.id,
+            tags=["user-story", "requirements", "product"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Sprint Planning Assistant",
+            content="Break down the initiative into 2-week sprint deliverables with dependencies, risks, and estimates.",
+            description="Planning prompt for product and engineering alignment.",
+            collection_id=product_collection.id,
+            tags=["sprint", "planning", "roadmap"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Competitor Analysis Summary",
+            content="Compare our product against top competitors and summarize differentiators, gaps, and opportunities.",
+            description="Research prompt for product strategy.",
+            collection_id=product_collection.id,
+            tags=["analysis", "competition", "strategy"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Social Post Variations",
+            content="Create 10 concise social media post variants for this campaign in different tones.",
+            description="Helps produce campaign-ready social copy.",
+            collection_id=marketing_collection.id,
+            tags=["social", "campaign", "copy"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Email Subject Line Optimizer",
+            content="Generate 15 high-conversion subject lines for this email objective and audience segment.",
+            description="Optimization prompt for email marketing.",
+            collection_id=marketing_collection.id,
+            tags=["email", "conversion", "marketing"],
+        )
+    )
+    target_storage.create_prompt(
+        Prompt(
+            title="Landing Page Copy Draft",
+            content="Draft a landing page with headline, subheadline, value propositions, objections, and CTA.",
+            description="Full-funnel landing page messaging prompt.",
+            collection_id=marketing_collection.id,
+            tags=["landing-page", "copywriting", "growth"],
+        )
+    )
+
+
 # Global storage instance
 storage = Storage()
+seed_mock_data(storage)

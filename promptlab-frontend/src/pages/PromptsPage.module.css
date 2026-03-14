@@ -1,0 +1,19 @@
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 260px;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.filterSelect {
+  width: 100%;
+  border: 1px solid #d8d8d8;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-sm);
+  background: #ffffff;
+}
+
+.paginationWrap {
+  display: flex;
+  justify-content: flex-end;
+}

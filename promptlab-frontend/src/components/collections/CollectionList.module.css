@@ -1,0 +1,48 @@
+.collectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--spacing-md);
+}
+
+.collectionCard {
+  border: 1px solid #ececec;
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+  min-height: 180px;
+}
+
+.title {
+  margin: 0 0 var(--spacing-xs);
+}
+
+.description {
+  margin: 0;
+  color: var(--color-text);
+  opacity: 0.85;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: auto;
+  flex-wrap: wrap;
+}
+
+.editButton,
+.deleteButton {
+  min-width: 84px;
+  padding: 6px 12px;
+  color: #ffffff;
+}
+
+.editButton {
+  background: var(--color-primary);
+}
+
+.deleteButton {
+  background: var(--color-error);
+}

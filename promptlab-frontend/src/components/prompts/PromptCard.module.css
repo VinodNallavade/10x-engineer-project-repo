@@ -2,21 +2,74 @@
 	border: 1px solid #ececec;
 	border-radius: var(--border-radius);
 	padding: var(--spacing-md);
-	margin-bottom: var(--spacing-sm);
 	background: white;
+	display: flex;
+	flex-direction: column;
+	min-height: 180px;
+}
+
+.listHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--spacing-md);
+}
+
+.listTitle {
+	margin: 0;
+}
+
+.headerActions {
+	display: flex;
+	gap: var(--spacing-sm);
+}
+
+.cardsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: var(--spacing-sm);
 }
 
 .title {
 	margin: 0 0 var(--spacing-xs);
+	font-size: 1rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.metaRow {
+	margin-bottom: var(--spacing-xs);
+}
+
+.collectionBadge {
+	display: inline-block;
+	max-width: 100%;
+	padding: 4px 8px;
+	border-radius: 999px;
+	font-size: 0.75rem;
+	font-weight: 600;
+	background: rgba(124, 58, 237, 0.12);
+	color: var(--color-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .content {
 	margin: 0 0 var(--spacing-sm);
+	color: var(--color-text);
+	opacity: 0.9;
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
 }
 
 .actions {
 	display: flex;
 	gap: var(--spacing-sm);
+	margin-top: auto;
 }
 
 .editButton,

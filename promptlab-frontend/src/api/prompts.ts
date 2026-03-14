@@ -1,8 +1,18 @@
 import { apiClient } from './client';
 import { Prompt } from '../types/prompt';
+import { buildQueryParams } from '../utils/query';
 
-export const fetchPrompts = async (): Promise<{ prompts: Prompt[]; total: number }> => {
-    return apiClient('/prompts');
+export interface FetchPromptsParams {
+    search?: string;
+    collection_id?: string;
+    limit?: number;
+    offset?: number;
+}
+
+export const fetchPrompts = async (params?: FetchPromptsParams): Promise<{ prompts: Prompt[]; total: number }> => {
+    const query = params ? buildQueryParams(params) : '';
+    const endpoint = query ? `/prompts?${query}` : '/prompts';
+    return apiClient(endpoint);
 };
 
 export const fetchPromptById = async (id: string): Promise<Prompt> => {

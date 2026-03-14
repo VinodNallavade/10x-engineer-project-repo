@@ -14,6 +14,8 @@ interface CollectionSelectProps {
 const CollectionSelect: React.FC<CollectionSelectProps> = ({ collections, selectedCollectionId, onSelect }) => {
   return (
     <select
+      id="collection"
+      className="collection-select"
       value={selectedCollectionId}
       onChange={(e) => onSelect(e.target.value)}
     >

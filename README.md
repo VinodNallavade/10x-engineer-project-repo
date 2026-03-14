@@ -1,64 +1,53 @@
-# PromptLab API (10x Engineer Project Backend)
+# PromptLab (10x Engineer Project)
 
-Backend service for **PromptLab**, an AI Prompt Engineering Platform.  
-This FastAPI application powers prompt and collection management, and is structured as a teaching project in the **10x Engineer** curriculum.
-
-- High-level product goals: see [`PROJECT_BRIEF.md`](PROJECT_BRIEF.md)  
-- Assessment details: see [`GRADING_RUBRIC.md`](GRADING_RUBRIC.md)
-
----
+PromptLab is a full-stack prompt management platform with a FastAPI backend and a React + Vite frontend.
+It supports prompt and collection management, filtering/search, pagination, health checks, and a polished UI workflow for creating and organizing reusable AI prompts.
 
 ## Table of Contents
 
-- [Project Overview](#project-overview)
-- [Features](#features)
+- [What This Project Includes](#what-this-project-includes)
+- [Tech Stack](#tech-stack)
 - [Repository Structure](#repository-structure)
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Architecture](#architecture)
 - [Quick Start](#quick-start)
-- [API Endpoint Summary](#api-endpoint-summary)
-  - [Health](#health)
-  - [Prompts](#prompts)
-  - [Collections](#collections)
-  - [Example Requests](#example-requests)
-- [Development Setup](#development-setup)
+- [Run with Docker Compose (Backend)](#run-with-docker-compose-backend)
+- [Backend Details](#backend-details)
+- [Frontend Details](#frontend-details)
+- [API Summary](#api-summary)
+- [Screenshots](#screenshots)
 - [Testing](#testing)
-- [Contributing](#contributing)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## Project Overview
+## What This Project Includes
 
-The **PromptLab API** (under `backend/`) is a FastAPI-based backend for:
-
-- Managing prompt **collections**
-- Managing individual **prompts** with metadata
-- Filtering/searching prompts with robust test coverage
-
-The codebase is intentionally small but realistic, designed to teach:
-
-- Clean API design
-- Separation of concerns (API, models, storage, utilities)
-- TDD-style development using `pytest`
+- Prompt CRUD (create, read, update, delete)
+- Collection CRUD (create, read, update, delete)
+- Prompt search and collection-based filtering
+- Pagination for prompt list views
+- API health endpoint and frontend health page
+- In-memory storage with startup mock seed data for demo/testing
+- Python test suite for API/storage logic
 
 ---
 
-## Features
+## Tech Stack
 
-- **FastAPI** application with automatic OpenAPI docs (`/docs`, `/redoc`)
-- **Prompt management**
-  - List, create, read, update (PUT/PATCH), delete
-  - Filter by collection (`collection_id` query param)
-  - Text search (`search` query param)
-  - Sorted by date (newest first) via helper functions in `app.utils`
-- **Collection management**
-  - List, create, read, delete
-  - Prevent deletion when prompts still reference a collection (implemented in `app.storage` and enforced by API)
-- **Health check** endpoint for monitoring and readiness
-- **In-memory storage** abstraction in `app.storage` (easily swappable for a real DB)
-- **Pydantic models** for validation and typed responses in `app.models`
-- **Full test suite** in `backend/tests/` using `pytest`
-- **Dev container** support via `.devcontainer/` for a reproducible environment
+### Backend
+
+- FastAPI
+- Uvicorn
+- Pydantic
+- Pytest / HTTPX
+
+### Frontend
+
+- React 18
+- TypeScript
+- Vite
+- React Router
+- CSS Modules + design tokens
 
 ---
 
@@ -66,367 +55,227 @@ The codebase is intentionally small but realistic, designed to teach:
 
 ```text
 10x-engineer-project-repo/
-├── PROJECT_BRIEF.md          # Product & task description
-├── GRADING_RUBRIC.md         # Evaluation rubric
-├── README.md                 # You are here
-└── backend/
-    ├── main.py               # Application entry point
-    ├── requirements.txt      # Python dependencies
-    ├── app/
-    │   ├── __init__.py       # Package metadata (__version__, etc.)
-    │   ├── api.py            # FastAPI routes (Prompt & Collection APIs)
-    │   ├── models.py         # Pydantic models (Prompt, Collection, schemas)
-    │   ├── storage.py        # In-memory storage layer + business rules
-    │   └── utils.py          # Sorting, filtering, and search helpers
-    ├── tests/
-    │   ├── __init__.py
-    │   ├── conftest.py       # pytest fixtures & shared setup
-    │   └── test_api.py       # API behavior tests
-    └── .pytest_cache/        # pytest cache (auto-generated)
+├── backend/
+│   ├── app/
+│   │   ├── api.py
+│   │   ├── models.py
+│   │   ├── storage.py
+│   │   └── utils.py
+│   ├── tests/
+│   ├── main.py
+│   ├── requirements.txt
+│   └── Dockerfile
+├── promptlab-frontend/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   └── types/
+│   ├── package.json
+│   └── vite.config.ts
+├── docs/
+│   ├── API_REFERENCE.md
+│   └── images/
+├── PROJECT_BRIEF.md
+├── GRADING_RUBRIC.md
+└── docker-compose.yml
 ```
 
-Dev container configuration:
+---
+
+## Architecture
 
 ```text
-.devcontainer/
-├── devcontainer.json          # VS Code dev container configuration
-└── setup.sh                   # Container setup script (Python, tools, etc.)
+Frontend (Vite @ localhost:3000)
+        │
+        │ /api/* (Vite proxy in development)
+        ▼
+Backend API (FastAPI @ localhost:8000)
+        │
+        ▼
+In-memory Storage (prompt + collection dictionaries)
 ```
 
----
-
-## Prerequisites
-
-Installed on your system or provided by the dev container:
-
-- **Python**: `python3` (3.9+ recommended)
-- **pip**: `pip3`
-- **git**: 2.x
-- (Recommended) **VS Code** with **Dev Containers** extension
-- (Optional) **Docker** for running the dev container
-
-Check:
-
-```bash
-python3 --version
-pip3 --version
-git --version
-```
-
----
-
-## Installation
-
-From the repository root:
-
-```bash
-git clone https://github.com/SarasAI-Institute/10x-engineer-project-repo.git
-cd 10x-engineer-project-repo
-```
-
-Set up the backend:
-
-```bash
-cd backend
-
-python3 -m venv .venv
-source .venv/bin/activate
-
-pip3 install --upgrade pip
-pip3 install -r requirements.txt
-```
-
-To leave the virtual environment:
-
-```bash
-deactivate
-```
+- In development, the frontend uses `/api` and Vite proxies requests to `http://localhost:8000`.
+- Backend storage is in-memory (`backend/app/storage.py`) and seeded with mock data on startup when empty.
 
 ---
 
 ## Quick Start
 
-### Run the API locally
-
-From `backend/`:
+### 1) Start Backend
 
 ```bash
-source .venv/bin/activate          # if using a venv
-python3 main.py
-# or explicitly (if you prefer):
-# python3 -m uvicorn app.api:app --reload --host 0.0.0.0 --port 8000
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
 ```
 
-Assumed base URL:
+Backend runs at: `http://localhost:8000`
 
-- `http://localhost:8000`
+Useful docs:
 
-Open interactive docs:
+- `http://localhost:8000/docs`
+- `http://localhost:8000/redoc`
+
+### 2) Start Frontend
+
+Open a new terminal:
 
 ```bash
-$BROWSER http://localhost:8000/docs
-# or
-$BROWSER http://localhost:8000/redoc
+cd promptlab-frontend
+npm install
+npm run dev
 ```
+
+Frontend runs at: `http://localhost:3000`
 
 ---
 
-## API Endpoint Summary
+## Run with Docker Compose (Backend)
 
-All routes are defined in [`backend/app/api.py`](backend/app/api.py).  
-Pydantic request/response models live in [`backend/app/models.py`](backend/app/models.py).
+From repository root:
 
-Base URL (local):
+```bash
+docker compose up --build
+```
 
-- `http://localhost:8000`
+This starts the backend container on port `8000` using `uvicorn` with reload.
+
+---
+
+## Backend Details
+
+Backend entry point: `backend/main.py`
+
+### Core modules
+
+- `backend/app/api.py`: API routes and request handling
+- `backend/app/models.py`: Pydantic request/response schemas
+- `backend/app/storage.py`: in-memory persistence + seed/mock data
+- `backend/app/utils.py`: filtering/search/sorting/tag helper logic
+
+### Data model highlights
+
+- `Prompt` fields include: `title`, `content`, `description`, `collection_id`, `tags`, timestamps
+- `Collection` fields include: `name`, `description`, timestamp
+- Validation constraints are enforced by Pydantic models
+
+---
+
+## Frontend Details
+
+Frontend root: `promptlab-frontend/`
+
+### Key areas
+
+- `src/pages/`: route-level views (`Prompts`, `Collections`, `Health`, create/edit pages)
+- `src/components/`: reusable UI for prompts, collections, layout, common controls
+- `src/api/`: fetch wrappers and endpoint-specific clients
+- `src/hooks/`: data hooks for prompts/collections
+- `src/styles/tokens.css`: theme tokens (colors, spacing, typography)
+
+### Main implemented UX
+
+- Prompt list with search, filter, pagination
+- Collection cards with edit/delete actions
+- Prompt creation requires selecting a collection
+- Inline navigation to create missing collections
+- Sidebar collapse/expand and breadcrumb navigation
+- Health page rendering API status/version
+
+---
+
+## API Summary
 
 ### Health
 
-| Method | Path      | Description          | Response model   |
-| ------ | --------- | -------------------- | ---------------- |
-| GET    | `/health` | Health/readiness     | `HealthResponse` |
-
----
+- `GET /health`
 
 ### Prompts
 
-| Method | Path                 | Description                                           | Query Params                    |
-| ------ | -------------------- | ----------------------------------------------------- | ------------------------------- |
-| GET    | `/prompts`           | List prompts (optionally filter & search)            | `collection_id`, `search`      |
-| GET    | `/prompts/{id}`      | Get a single prompt by ID                             | –                               |
-| POST   | `/prompts`           | Create a new prompt                                   | –                               |
-| PUT    | `/prompts/{id}`      | Replace an existing prompt                            | –                               |
-| PATCH  | `/prompts/{id}`      | Partially update a prompt                             | –                               |
-| DELETE | `/prompts/{id}`      | Delete a prompt                                       | –                               |
-
-Key models (see `app.models`):
-
-- `Prompt`
-- `PromptCreate`
-- `PromptUpdate`
-- `PromptList`
-
-Logic helpers in `app.utils`:
-
-- `sort_prompts_by_date(prompts, descending=True)`
-- `filter_prompts_by_collection(prompts, collection_id)`
-- `search_prompts(prompts, query)`
-
----
+- `GET /prompts`
+- `GET /prompts/{prompt_id}`
+- `POST /prompts`
+- `PATCH /prompts/{prompt_id}`
+- `PUT /prompts/{prompt_id}`
+- `DELETE /prompts/{prompt_id}`
 
 ### Collections
 
-| Method | Path                      | Description                                      |
-| ------ | ------------------------- | ------------------------------------------------ |
-| GET    | `/collections`            | List all collections                             |
-| GET    | `/collections/{id}`       | Get a single collection by ID                    |
-| POST   | `/collections`            | Create a new collection                          |
-| DELETE | `/collections/{id}`       | Delete a collection (if no prompts reference it) |
+- `GET /collections`
+- `GET /collections/{collection_id}`
+- `POST /collections`
+- `PATCH /collections/{collection_id}`
+- `DELETE /collections/{collection_id}`
 
-Models (see `app.models`):
-
-- `Collection`
-- `CollectionCreate`
-- `CollectionList`
-
-`app.storage` enforces that a collection cannot be deleted while prompts still reference it.
+For full request/response details, see `docs/API_REFERENCE.md` and FastAPI docs at `/docs`.
 
 ---
 
-## Example Requests
+## Screenshots
 
-> Adjust IDs and payloads to match your data.  
-> For full schemas, see `app/models.py` and tests in `tests/test_api.py`.
+> The following images are included in `docs/images/` to document the current UI flows.
 
-Base:
+### Prompts Page
 
-```bash
-BASE_URL=http://localhost:8000
-```
+![PromptLab Prompts Page](docs/images/app-prompts.png)
 
-### Health Check
+### Collections Page
 
-```bash
-curl -X GET "$BASE_URL/health"
-```
+![PromptLab Collections Page](docs/images/app-collections.png)
 
-Example response:
+### Health Page
 
-```json
-{
-  "status": "healthy",
-  "version": "0.1.0"
-}
-```
+![PromptLab Health Page](docs/images/app-health.png)
 
-### List Prompts
+### Replacing with your real runtime screenshots
 
-```bash
-# All prompts
-curl -X GET "$BASE_URL/prompts"
+After running backend + frontend locally, you can replace these images with actual screenshots while keeping the same filenames:
 
-# Filter by collection
-curl -G "$BASE_URL/prompts" \
-  --data-urlencode "collection_id=collection-123"
-
-# Search prompts
-curl -G "$BASE_URL/prompts" \
-  --data-urlencode "search=chatgpt"
-```
-
-### Create a Prompt
-
-```bash
-curl -X POST "$BASE_URL/prompts" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Code review assistant",
-    "content": "You are an expert software engineer...",
-    "description": "Helps review pull requests",
-    "collection_id": "collection-123"
-  }'
-```
-
-### Update a Prompt (PUT)
-
-```bash
-curl -X PUT "$BASE_URL/prompts/prompt-1" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "title": "Updated title",
-    "content": "Updated content",
-    "description": "Updated description",
-    "collection_id": "collection-123"
-  }'
-```
-
-### Partially Update a Prompt (PATCH)
-
-```bash
-curl -X PATCH "$BASE_URL/prompts/prompt-1" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "description": "Only update the description"
-  }'
-```
-
-### Delete a Prompt
-
-```bash
-curl -X DELETE "$BASE_URL/prompts/prompt-1"
-```
-
-### List Collections
-
-```bash
-curl -X GET "$BASE_URL/collections"
-```
-
-### Create a Collection
-
-```bash
-curl -X POST "$BASE_URL/collections" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "Productivity",
-    "description": "Prompts to boost productivity"
-  }'
-```
-
-### Delete a Collection
-
-```bash
-curl -X DELETE "$BASE_URL/collections/collection-123"
-```
-
-If prompts still reference the collection, expect a 4xx error describing the conflict.
-
----
-
-## Development Setup
-
-### Using the VS Code Dev Container (recommended)
-
-This repo includes `.devcontainer/devcontainer.json` and `setup.sh`.
-
-1. Open the folder in **VS Code**.
-2. When prompted, choose **“Reopen in Container”**.
-3. After the container starts, a terminal is available with:
-   - `python3`, `pip3`
-   - `git`
-   - `node`, `npm`, `eslint` (if you extend to a frontend later)
-4. In the container terminal:
-
-   ```bash
-   cd backend
-   python3 -m venv .venv
-   source .venv/bin/activate
-   pip3 install -r requirements.txt
-   python3 main.py
-   ```
-
-You can open the API docs from inside the container:
-
-```bash
-$BROWSER http://localhost:8000/docs
-```
+- `docs/images/app-prompts.svg`
+- `docs/images/app-collections.svg`
+- `docs/images/app-health.svg`
 
 ---
 
 ## Testing
 
-Tests are in `backend/tests/` and use `pytest`.
-
 From `backend/`:
 
 ```bash
-source .venv/bin/activate  # if using venv
-pytest                     # run all tests
-pytest -k "prompts" -vv    # run a subset (example)
+source .venv/bin/activate
+pytest
 ```
 
-The tests in `tests/test_api.py` define the **source of truth** for expected API behavior and edge cases (e.g., 404s, validation, collection deletion rules).
+Run a focused suite:
+
+```bash
+pytest tests/test_storage.py -q
+```
 
 ---
 
-## Contributing
+## Troubleshooting
 
-This project is designed for learning and assessment (see `GRADING_RUBRIC.md`), but the workflow is the same as a real-world service.
+- **Frontend can’t reach backend**
+  - Ensure backend is running on `http://localhost:8000`
+  - Ensure frontend runs via `npm run dev` so Vite proxy works
 
-1. **Create a branch**
+- **No data appears**
+  - Backend seeds mock data on startup if storage is empty
+  - Restart backend to reseed in-memory state
 
-   ```bash
-   git checkout -b feature/short-description
-   ```
+- **Port already in use**
+  - Stop existing process on `3000` or `8000`, then restart apps
 
-2. **Make changes**
+---
 
-   - API changes in `backend/app/api.py`
-   - Data contracts in `backend/app/models.py`
-   - Data rules in `backend/app/storage.py`
-   - Utilities in `backend/app/utils.py`
-   - Tests in `backend/tests/test_api.py`
-
-3. **Run tests**
-
-   ```bash
-   cd backend
-   source .venv/bin/activate
-   pytest
-   ```
-
-4. **Commit with a clear message**
-
-   ```bash
-   git commit -am "feat: implement PATCH /prompts/{id}"
-   ```
-
-5. **Push and open a Pull Request** against `main`, describing:
-   - What changed
-   - Any new or modified endpoints
-   - How you tested it
-
-For grading or review, ensure your changes align with both:
+For project goals and evaluation context:
 
 - `PROJECT_BRIEF.md`
 - `GRADING_RUBRIC.md`
