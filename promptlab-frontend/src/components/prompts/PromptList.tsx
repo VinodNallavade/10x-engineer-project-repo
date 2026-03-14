@@ -1,23 +1,16 @@
 import React from 'react';
-import { usePrompts } from '../../hooks/usePrompts';
 import PromptCard from './PromptCard';
-import LoadingSpinner from '../shared/LoadingSpinner';
-import ErrorMessage from '../shared/ErrorMessage';
 import EmptyState from '../common/EmptyState';
+import { Prompt } from '../../types/prompt';
 
-const PromptList: React.FC = () => {
-    const { prompts, isLoading, error } = usePrompts();
+interface PromptListProps {
+    prompts: Prompt[];
+}
 
-    if (isLoading) {
-        return <LoadingSpinner />;
-    }
-
-    if (error) {
-        return <ErrorMessage message={error.message} />;
-    }
+const PromptList: React.FC<PromptListProps> = ({ prompts }) => {
 
     if (prompts.length === 0) {
-        return <EmptyState message="No prompts available." />;
+        return <EmptyState />;
     }
 
     return (

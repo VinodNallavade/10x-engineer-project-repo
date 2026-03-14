@@ -1,6 +1,6 @@
 import { API_BASE_URL } from '../config';
 
-const apiClient = async (endpoint: string, options: RequestInit = {}) => {
+export const apiClient = async (endpoint: string, options: RequestInit = {}) => {
     const defaultHeaders = {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -12,14 +12,16 @@ const apiClient = async (endpoint: string, options: RequestInit = {}) => {
     });
 
     if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw {
             status: response.status,
-            message: errorData.message || 'An error occurred',
+            message: (errorData as { message?: string }).message || 'An error occurred',
         };
     }
 
     return response.json();
 };
+
+export const fetchClient = apiClient;
 
 export default apiClient;

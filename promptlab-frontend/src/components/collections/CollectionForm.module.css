@@ -1,0 +1,16 @@
+:global(.collection-form) {
+	max-width: 720px;
+	margin: 0 auto;
+	background: #ffffff;
+	border-radius: var(--border-radius);
+	padding: var(--spacing-lg);
+	box-shadow: var(--box-shadow);
+}
+
+:global(.collection-form h2) {
+	margin-top: 0;
+}
+
+:global(.collection-form button) {
+	margin-top: var(--spacing-sm);
+}

@@ -1,19 +1,25 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
     return (
         <aside className="sidebar">
-            <nav>
-                <ul>
+            <nav className="sidebar-nav" aria-label="Sidebar Navigation">
+                <ul className="sidebar-nav-list">
                     <li>
-                        <Link to="/prompts">Prompts</Link>
+                        <NavLink to="/prompts" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+                            Prompts
+                        </NavLink>
                     </li>
                     <li>
-                        <Link to="/collections">Collections</Link>
+                        <NavLink to="/collections" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+                            Collections
+                        </NavLink>
                     </li>
                     <li>
-                        <Link to="/health">API Health</Link>
+                        <NavLink to="/health" className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}>
+                            API Health
+                        </NavLink>
                     </li>
                 </ul>
             </nav>

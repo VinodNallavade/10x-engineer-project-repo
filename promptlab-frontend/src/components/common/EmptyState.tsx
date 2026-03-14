@@ -1,10 +1,18 @@
 import React from 'react';
 
-const EmptyState: React.FC = () => {
+interface EmptyStateProps {
+    title?: string;
+    message?: string;
+}
+
+const EmptyState: React.FC<EmptyStateProps> = ({
+    title = 'No Items Found',
+    message = 'Please check back later or try a different search.',
+}) => {
     return (
         <div className="empty-state">
-            <h2>No Items Found</h2>
-            <p>Please check back later or try a different search.</p>
+            <h2>{title}</h2>
+            <p>{message}</p>
         </div>
     );
 };

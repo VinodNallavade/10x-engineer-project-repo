@@ -1,0 +1,27 @@
+:global(.header) {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--spacing-md) var(--spacing-lg);
+	background: #ffffff;
+	border-bottom: 1px solid #e9e9e9;
+}
+
+:global(.logo a) {
+	font-size: var(--font-size-large);
+	font-weight: 700;
+	color: var(--color-text);
+}
+
+:global(.navigation ul) {
+	list-style: none;
+	display: flex;
+	gap: var(--spacing-md);
+	margin: 0;
+	padding: 0;
+}
+
+:global(.navigation a) {
+	color: var(--color-text);
+	font-weight: 500;
+}

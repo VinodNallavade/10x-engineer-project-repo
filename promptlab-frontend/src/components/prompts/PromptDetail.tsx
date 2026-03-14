@@ -1,24 +1,11 @@
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { usePromptDetails } from '../../hooks/usePromptDetails';
-import LoadingSpinner from '../shared/LoadingSpinner';
-import ErrorMessage from '../shared/ErrorMessage';
+import { Prompt } from '../../types/prompt';
 
-const PromptDetail: React.FC = () => {
-    const { id } = useParams<{ id: string }>();
-    const { prompt, loading, error } = usePromptDetails(id);
+interface PromptDetailProps {
+    prompt: Prompt;
+}
 
-    if (loading) {
-        return <LoadingSpinner />;
-    }
-
-    if (error) {
-        return <ErrorMessage message={error.message} />;
-    }
-
-    if (!prompt) {
-        return <ErrorMessage message="Prompt not found." />;
-    }
+const PromptDetail: React.FC<PromptDetailProps> = ({ prompt }) => {
 
     return (
         <div>

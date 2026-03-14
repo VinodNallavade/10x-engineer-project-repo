@@ -1,38 +1,42 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { createPrompt } from '../../api/prompts';
 import { Prompt } from '../../types/prompt';
 import './PromptForm.module.css';
 
-const PromptForm: React.FC<{ initialData?: Prompt }> = ({ initialData }) => {
+type PromptFormData = Omit<Prompt, 'id' | 'created_at' | 'updated_at'>;
+
+interface PromptFormProps {
+    initialData?: Prompt;
+    onSubmit: (promptData: PromptFormData) => Promise<void> | void;
+}
+
+const PromptForm: React.FC<PromptFormProps> = ({ initialData, onSubmit }) => {
     const [title, setTitle] = useState(initialData?.title || '');
     const [content, setContent] = useState(initialData?.content || '');
     const [description, setDescription] = useState(initialData?.description || '');
     const [tags, setTags] = useState(initialData?.tags.join(', ') || '');
     const [error, setError] = useState<string | null>(null);
-    const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
-        const promptData: Prompt = {
+        const promptData: PromptFormData = {
             title,
             content,
             description: description || null,
+            collection_id: initialData?.collection_id || null,
             tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
         };
 
         try {
-            const createdPrompt = await createPrompt(promptData);
-            navigate(`/prompts/${createdPrompt.id}`);
+            await onSubmit(promptData);
         } catch (err) {
             setError('Failed to create prompt. Please try again.');
         }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} className="prompt-form">
             <h2>{initialData ? 'Edit Prompt' : 'New Prompt'}</h2>
             {error && <p className="error">{error}</p>}
             <div>

@@ -1,26 +1,28 @@
 import { apiClient } from './client';
 import { Prompt } from '../types/prompt';
 
-export const fetchPrompts = async (params: Record<string, any> = {}): Promise<{ prompts: Prompt[]; total: number }> => {
-    const response = await apiClient.get('/prompts', { params });
-    return response.data;
+export const fetchPrompts = async (): Promise<{ prompts: Prompt[]; total: number }> => {
+    return apiClient('/prompts');
 };
 
 export const fetchPromptById = async (id: string): Promise<Prompt> => {
-    const response = await apiClient.get(`/prompts/${id}`);
-    return response.data;
+    return apiClient(`/prompts/${id}`);
 };
 
 export const createPrompt = async (prompt: Omit<Prompt, 'id' | 'created_at' | 'updated_at'>): Promise<Prompt> => {
-    const response = await apiClient.post('/prompts', prompt);
-    return response.data;
+    return apiClient('/prompts', {
+        method: 'POST',
+        body: JSON.stringify(prompt),
+    });
 };
 
 export const updatePrompt = async (id: string, prompt: Partial<Omit<Prompt, 'id' | 'created_at' | 'updated_at'>>): Promise<Prompt> => {
-    const response = await apiClient.patch(`/prompts/${id}`, prompt);
-    return response.data;
+    return apiClient(`/prompts/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(prompt),
+    });
 };
 
 export const deletePrompt = async (id: string): Promise<void> => {
-    await apiClient.delete(`/prompts/${id}`);
+    await apiClient(`/prompts/${id}`, { method: 'DELETE' });
 };

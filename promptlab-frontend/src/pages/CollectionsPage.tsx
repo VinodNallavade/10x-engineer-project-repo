@@ -1,23 +1,19 @@
-import React, { useEffect } from 'react';
-import { useCollections } from '../hooks/useCollections';
+import React from 'react';
+import useCollections from '../hooks/useCollections';
 import CollectionList from '../components/collections/CollectionList';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import ErrorMessage from '../components/shared/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
 
 const CollectionsPage: React.FC = () => {
-    const { collections, isLoading, error, fetchCollections } = useCollections();
+    const { collections, loading, error } = useCollections();
 
-    useEffect(() => {
-        fetchCollections();
-    }, [fetchCollections]);
-
-    if (isLoading) {
+    if (loading) {
         return <LoadingSpinner />;
     }
 
     if (error) {
-        return <ErrorMessage message={error.message} />;
+        return <ErrorMessage message={error} />;
     }
 
     if (collections.length === 0) {

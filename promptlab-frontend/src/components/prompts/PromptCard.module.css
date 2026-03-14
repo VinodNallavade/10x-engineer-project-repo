@@ -1,0 +1,29 @@
+.card {
+	border: 1px solid #ececec;
+	border-radius: var(--border-radius);
+	padding: var(--spacing-md);
+	margin-bottom: var(--spacing-sm);
+	background: white;
+}
+
+.title {
+	margin: 0 0 var(--spacing-xs);
+}
+
+.content {
+	margin: 0 0 var(--spacing-sm);
+}
+
+.actions {
+	display: flex;
+	gap: var(--spacing-sm);
+}
+
+.editButton,
+.deleteButton {
+	padding: 6px 12px;
+}
+
+.deleteButton {
+	background: var(--color-error);
+}

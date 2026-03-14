@@ -1,0 +1,16 @@
+:global(.prompt-form) {
+	max-width: 820px;
+	margin: 0 auto;
+	background: #ffffff;
+	border-radius: var(--border-radius);
+	padding: var(--spacing-lg);
+	box-shadow: var(--box-shadow);
+}
+
+:global(.prompt-form h2) {
+	margin-top: 0;
+}
+
+:global(.prompt-form button) {
+	margin-top: var(--spacing-sm);
+}

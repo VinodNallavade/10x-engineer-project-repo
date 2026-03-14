@@ -4,9 +4,10 @@ import PromptList from '../components/prompts/PromptList';
 import LoadingSpinner from '../components/shared/LoadingSpinner';
 import ErrorMessage from '../components/shared/ErrorMessage';
 import EmptyState from '../components/common/EmptyState';
+import { Prompt } from '../types/prompt';
 
 const PromptsPage: React.FC = () => {
-    const [prompts, setPrompts] = useState([]);
+    const [prompts, setPrompts] = useState<Prompt[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

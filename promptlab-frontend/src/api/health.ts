@@ -1,10 +1,11 @@
-import { fetchClient } from './client';
+import { apiClient } from './client';
 
 export const checkHealth = async () => {
     try {
-        const response = await fetchClient('/health');
+        const response = await apiClient('/health');
         return response;
-    } catch (error) {
-        throw new Error(`Health check failed: ${error.message}`);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        throw new Error(`Health check failed: ${message}`);
     }
 };

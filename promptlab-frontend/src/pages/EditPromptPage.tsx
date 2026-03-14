@@ -1,33 +1,30 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { usePromptDetails } from '../hooks/usePromptDetails';
-import { PromptForm } from '../components/prompts/PromptForm';
+import usePromptDetails from '../hooks/usePromptDetails';
+import PromptForm from '../components/prompts/PromptForm';
+import { updatePrompt } from '../api/prompts';
+import { Prompt } from '../types/prompt';
 
 const EditPromptPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
-    const { prompt, fetchPrompt, updatePrompt, loading, error } = usePromptDetails(id);
+    const { prompt, loading, error } = usePromptDetails(id || '');
 
-    useEffect(() => {
-        if (id) {
-            fetchPrompt();
+    const handleSubmit = async (updatedPrompt: Omit<Prompt, 'id' | 'created_at' | 'updated_at'>) => {
+        if (!id) {
+            return;
         }
-    }, [id, fetchPrompt]);
-
-    const handleSubmit = async (updatedPrompt: any) => {
-        const success = await updatePrompt(updatedPrompt);
-        if (success) {
-            navigate(`/prompts/${id}`);
-        }
+        await updatePrompt(id, updatedPrompt);
+        navigate(`/prompts/${id}`);
     };
 
     if (loading) return <div>Loading...</div>;
-    if (error) return <div>Error: {error.message}</div>;
+    if (error) return <div>Error: {error}</div>;
 
     return (
         <div>
             <h1>Edit Prompt</h1>
-            {prompt && <PromptForm prompt={prompt} onSubmit={handleSubmit} />}
+            {prompt && <PromptForm initialData={prompt} onSubmit={handleSubmit} />}
         </div>
     );
 };
